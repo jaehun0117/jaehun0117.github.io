@@ -63,6 +63,14 @@ h1,h2,h3{line-height:1.3}
 }
 @media (min-width:761px){.app{padding-bottom:40px}}
 .banner{margin:12px 0;padding:12px 14px;border-radius:14px;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.feedbar{display:flex;align-items:center;gap:10px;width:100%;margin:12px 0;padding:12px 14px;border-radius:14px;border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--text);font-weight:700;text-align:left;cursor:pointer}
+.feedbar b{color:var(--accent)}
+.feedbar .go{margin-left:auto;color:var(--accent);font-weight:800}
+.fitem{background:var(--surface-2);border-left:6px solid var(--c);border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;flex-direction:column;gap:4px}
+.fitem h3{margin:2px 0 0;font-size:1.05rem;font-weight:800}
+.fitem .org,.fitem .src{color:var(--muted);font-size:.88rem}
+.fitem .memo{font-size:.92rem;white-space:pre-wrap}
+.fitem .badge{align-self:flex-start;font-size:.75rem;font-weight:800;padding:1px 8px;border-radius:999px;background:var(--c);color:var(--ci)}
 
 /* ================= 4. 버튼·입력 ================= */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:10px 18px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--text);font-weight:700;text-decoration:none;line-height:1.2;text-align:center}
@@ -415,7 +423,8 @@ details.paste{background:var(--surface);border:1.5px solid var(--line);border-ra
       events: [],
       categories: DEFAULT_CATS.map((c) => ({ id: c.id, name: c.name, color: c.color, kw: c.kw.slice() })),
       settings: Object.assign({}, DEFAULT_SETTINGS, { defaultAlarms: DEFAULT_SETTINGS.defaultAlarms.map((a) => ({ id: uid(), ref: a.ref, offset: a.offset })) }),
-      log: []
+      log: [],
+      feed: { done: {} }
     };
   }
   function normAlarm(a) {
@@ -465,7 +474,9 @@ details.paste{background:var(--surface);border:1.5px solid var(--line);border-ra
     const ids = new Set(cats.map((c) => c.id));
     const events = (Array.isArray(d.events) ? d.events : []).map(normEvent).filter(Boolean);
     events.forEach((e) => { if (!ids.has(e.category)) e.category = 'etc'; });
-    return { v: 1, events: events, categories: cats, settings: settings, log: Array.isArray(d.log) ? d.log.filter(Boolean).slice(0, 200) : [] };
+    const done = {};
+    if (d.feed && d.feed.done && typeof d.feed.done === 'object') Object.keys(d.feed.done).slice(-3000).forEach((k) => { const v = d.feed.done[k]; if (v === 'added' || v === 'dismissed') done[k] = v; });
+    return { v: 1, events: events, categories: cats, settings: settings, log: Array.isArray(d.log) ? d.log.filter(Boolean).slice(0, 200) : [], feed: { done: done } };
   }
 
   let storageOK = true;
@@ -1684,12 +1695,112 @@ details.paste{background:var(--surface);border:1.5px solid var(--line);border-ra
     const meta = $('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', dark ? '#11151b' : '#f5f3ee');
   }
+  /* =========================================================
+     14-1. 받은 소식함 (GitHub 저장소의 feed.json)
+     Claude가 정기적으로 모아 저장소에 올린 공고를 읽어 와서
+     골라 담을 수 있게 보여 줘요. 담은 것/숨긴 것은 이 브라우저에 기억해요.
+     ========================================================= */
+  const feed = { status: 'idle', updated: '', items: [], err: '' };
+  async function loadFeed(manual) {
+    if (!/^https?:$/.test(location.protocol)) { feed.status = 'local'; if (manual) toast('받은 소식함은 GitHub Pages 주소(https://…)에서 열었을 때만 불러와요', 4500); return; }
+    feed.status = 'loading';
+    if (ui.view === 'inbox') render();
+    try {
+      const r = await fetch('feed.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const arr = Array.isArray(d) ? d : d && Array.isArray(d.items) ? d.items : [];
+      feed.items = arr.filter((o) => o && typeof o === 'object' && o.title).map((o) => Object.assign({}, o, { id: String(o.id || o.url || o.title) }));
+      feed.updated = d && d.updated ? String(d.updated) : '';
+      feed.status = 'ok'; feed.err = '';
+      if (manual) toast('소식을 새로 불러왔어요 (새 소식 ' + feedPending().length + '건)', 3500);
+    } catch (err) {
+      feed.status = 'error'; feed.err = String(err && err.message || err);
+      if (manual) toast('소식을 불러오지 못했어요: ' + feed.err, 4500);
+    }
+    if ($('#sheet').hidden && (ui.view === 'list' || ui.view === 'inbox')) render();
+  }
+  function feedEndDate(o) {
+    const pick = (k) => { const p = o[k] ? parseDateStr(o[k]) : null; return p ? p.date : ''; };
+    return pick('deadline') || pick('eventEnd') || pick('event') || '';
+  }
+  function feedState(o) {
+    if (state.feed.done[o.id]) return state.feed.done[o.id];
+    const end = feedEndDate(o);
+    if (end && end < ymd(new Date())) return 'expired';
+    const dl = o.deadline ? parseDateStr(o.deadline) : null, ev = o.event ? parseDateStr(o.event) : null;
+    const k = String(o.title).replace(/\s+/g, '').toLowerCase() + '|' + ((dl && dl.date) || (ev && ev.date) || '');
+    if (state.events.some((x) => dupKey(x) === k)) return 'added';
+    return 'new';
+  }
+  function feedPending() { return feed.items.filter((o) => feedState(o) === 'new'); }
+  function feedCatStyle(o) {
+    const n = String(o.category || '').trim();
+    const c = state.categories.find((x) => x.name === n || x.id === n) || catOf('etc');
+    return { name: n || c.name, style: catStyle(c) };
+  }
+  function feedBanner() {
+    const n = feedPending().length;
+    if (!n) return '';
+    return '<button class="feedbar" data-act="openFeed">📬 <span><b>새 소식 ' + n + '건</b> — Claude가 모아 온 공고가 있어요</span><span class="go">보기 ›</span></button>';
+  }
+  function feedItemHtml(o, st) {
+    const c = feedCatStyle(o), url = safeUrl(o.url);
+    const L = [];
+    [['start', '접수 시작'], ['deadline', '마감'], ['event', '행사'], ['eventEnd', '행사 종료']].forEach((x) => { if (o[x[0]]) L.push('<b>' + x[1] + '</b> ' + esc(o[x[0]])); });
+    const id = esc(o.id);
+    const btns = st === 'new'
+      ? '<button class="btn sm primary" data-act="feedAdd" data-id="' + id + '">＋ 담기</button><button class="btn sm" data-act="feedSkip" data-id="' + id + '">안 볼래요</button>'
+      : st === 'dismissed' ? '<button class="btn sm" data-act="feedUndo" data-id="' + id + '">다시 보기</button>' : '';
+    return '<div class="fitem" style="' + c.style + '"><span class="badge">' + esc(c.name) + '</span>' +
+      '<h3>' + esc(o.title) + '</h3>' + (o.org ? '<div class="org">' + esc(o.org) + '</div>' : '') +
+      (L.length ? '<div class="when">' + L.join(' · ') + '</div>' : '<div class="when muted">날짜 정보 없음</div>') +
+      (o.memo ? '<div class="memo">' + esc(o.memo) + '</div>' : '') +
+      (o.source ? '<div class="src">출처: ' + esc(o.source) + (o.foundAt ? ' · 수집 ' + esc(o.foundAt) : '') + '</div>' : '') +
+      '<div class="row">' + btns + (url ? '<a class="btn sm ghost" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">공고 열기 ↗</a>' : '') + '</div></div>';
+  }
+  function viewInbox() {
+    const head = '<div class="row"><button class="btn sm ghost" data-act="closeFeed">‹ 목록으로</button><button class="btn sm" data-act="feedReload">새로고침</button></div>';
+    if (feed.status === 'local') return head + '<section class="panel"><h2>받은 소식함</h2><p>이 파일을 컴퓨터에서 직접 열어서 소식을 불러올 수 없어요. <b>https://jaehun0117.github.io</b> 주소로 열어 주세요.</p></section>';
+    if (feed.status === 'loading' || feed.status === 'idle') return head + '<section class="panel"><h2>받은 소식함</h2><p class="muted">불러오는 중…</p></section>';
+    if (feed.status === 'error') return head + '<section class="panel"><h2>받은 소식함</h2><p>소식을 불러오지 못했어요. (' + esc(feed.err) + ')</p></section>';
+    const groups = { new: [], added: [], dismissed: [], expired: [] };
+    feed.items.forEach((o) => groups[feedState(o)].push(o));
+    groups.new.sort((a, b) => (feedEndDate(a) || '9999') < (feedEndDate(b) || '9999') ? -1 : 1);
+    const upd = feed.updated ? ' · 마지막 수집 ' + esc(feed.updated.replace('T', ' ').slice(0, 16)) : '';
+    return head + '<section class="panel"><h2>받은 소식함 <small>새 소식 ' + groups.new.length + '건' + upd + '</small></h2>' +
+      '<p class="hint">Claude가 정기적으로 찾아 GitHub 저장소에 올린 공고예요. <b>담기</b>를 누르면 내 스크랩북에 추가되고 기본 알림도 붙어요. 날짜·조건은 꼭 공고 원문에서 다시 확인하세요.</p>' +
+      (groups.new.length > 1 ? '<div class="row"><button class="btn sm" data-act="feedAddAll">모두 담기 (' + groups.new.length + ')</button></div>' : '') +
+      (groups.new.length ? groups.new.map((o) => feedItemHtml(o, 'new')).join('') : '<p class="muted">새 소식이 없어요. 다음 수집을 기다려 주세요.</p>') + '</section>' +
+      (groups.dismissed.length ? '<section class="panel"><h2>숨긴 소식 <small>' + groups.dismissed.length + '건</small></h2>' + groups.dismissed.map((o) => feedItemHtml(o, 'dismissed')).join('') + '</section>' : '') +
+      '<p class="muted">이미 담은 소식 ' + groups.added.length + '건 · 기한 지난 소식 ' + groups.expired.length + '건은 숨겼어요.</p>';
+  }
+  function feedAdd(o) {
+    const memo = [o.memo, o.source ? '출처: ' + o.source : ''].filter(Boolean).join('\n');
+    const e = simpleToEvent(Object.assign({}, o, { memo: memo, status: undefined, star: false }));
+    if (!e) return false;
+    state.events.push(e);
+    state.feed.done[o.id] = 'added';
+    return true;
+  }
+  function feedAct(act, id) {
+    if (act === 'openFeed') { ui.view = 'inbox'; render(); window.scrollTo(0, 0); if (feed.status !== 'ok') loadFeed(); return; }
+    if (act === 'closeFeed') { setView('list'); return; }
+    if (act === 'feedReload') { loadFeed(true); return; }
+    if (act === 'feedAddAll') { let n = 0; feedPending().forEach((o) => { if (feedAdd(o)) n++; }); save(); render(); toast(n + '건을 스크랩북에 담았어요', 3500); return; }
+    const o = feed.items.find((x) => x.id === id);
+    if (!o) return;
+    if (act === 'feedAdd') { if (feedAdd(o)) { save(); render(); toast('스크랩북에 담았어요', 2500); } }
+    else if (act === 'feedSkip') { state.feed.done[o.id] = 'dismissed'; save(); render(); }
+    else if (act === 'feedUndo') { delete state.feed.done[o.id]; save(); render(); }
+  }
+
   function render() {
     if (ui.cat !== 'all' && !state.categories.some((c) => c.id === ui.cat)) ui.cat = 'all';
     $$('#tabs [data-view]').forEach((b) => { if (b.dataset.view === ui.view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     const warn = storageOK ? '' : '<div class="banner">⚠️ 이 브라우저에서는 저장소(localStorage)를 쓸 수 없어요(시크릿 모드·저장 차단 등). 새로고침하면 데이터가 사라져요.</div>';
-    const html = ui.view === 'calendar' ? viewCalendar() : ui.view === 'alerts' ? viewAlerts() : ui.view === 'settings' ? viewSettings() : viewList();
-    $('#main').innerHTML = warn + html;
+    const html = ui.view === 'calendar' ? viewCalendar() : ui.view === 'alerts' ? viewAlerts() : ui.view === 'settings' ? viewSettings() : ui.view === 'inbox' ? viewInbox() : viewList();
+    $('#main').innerHTML = warn + (ui.view === 'list' ? feedBanner() : '') + html;
   }
   function refreshView() {
     const ae = document.activeElement;
@@ -1721,6 +1832,7 @@ details.paste{background:var(--surface);border:1.5px solid var(--line);border-ra
     let sc, i, d;
     switch (act) {
       case 'add': openEditor(null); break;
+      case 'openFeed': case 'closeFeed': case 'feedReload': case 'feedAddAll': case 'feedAdd': case 'feedSkip': case 'feedUndo': feedAct(act, el.dataset.id); break;
       case 'edit': openEditor(el.dataset.id); break;
       case 'star': {
         const e = findEv(el.dataset.id);
@@ -1926,6 +2038,8 @@ details.paste{background:var(--surface);border:1.5px solid var(--line);border-ra
   $('#todayLabel').textContent = todayText();
   render();
   handleHash();
+  loadFeed();
+  setInterval(() => { if (!document.hidden) loadFeed(); }, 30 * 60 * 1000);
   setTimeout(checkAlarms, 800);
   setInterval(checkAlarms, 20000);
   setInterval(tick, 60000);

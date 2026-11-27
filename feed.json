@@ -1,0 +1,103 @@
+{
+  "updated": "2026-11-27T16:40+09:00",
+  "items": [
+    {
+      "id": "kosaf-2027-1-national-1st",
+      "title": "2027학년도 1학기 국가장학금 1차 신청",
+      "category": "장학금",
+      "org": "교육부 · 한국장학재단",
+      "url": "https://www.kosaf.go.kr",
+      "start": "2026-11-24 09:00",
+      "deadline": "2027-01-07 18:00",
+      "event": "",
+      "eventEnd": "",
+      "memo": "재학생·복학생은 1차 신청이 원칙. 마감일은 18시에 닫힘. 서류 제출·가구원(부모) 동의는 2027-01-14 18:00까지. 신청완료 상태까지 꼭 확인.",
+      "source": "아시아뉴스통신 2026-11 (교육부 보도자료) https://www.anewsa.com/detail.php?number=3220882",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "kosaf-2027-1-work-1st",
+      "title": "2027학년도 1학기 국가근로장학금 신청",
+      "category": "장학금",
+      "org": "교육부 · 한국장학재단",
+      "url": "https://www.kosaf.go.kr",
+      "start": "2026-11-24 09:00",
+      "deadline": "2027-01-07 18:00",
+      "event": "",
+      "eventEnd": "",
+      "memo": "국가장학금 1차 신청 기간에 함께 신청 가능(교내외 근로 + 장학금). 마감 시각은 국가장학금과 같다고 보고 넣었으니 재단 공지로 확인.",
+      "source": "시사코리아 2026-11-23 http://www.sisakorea.kr/100715",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "mobis-robotics-challenge-2027",
+      "title": "2027 MOBIS Robotics Challenge (그리퍼 설계·제작 로봇 경진대회)",
+      "category": "경진대회",
+      "org": "현대모비스",
+      "url": "https://mobis-robotics-challenge.com/",
+      "start": "",
+      "deadline": "",
+      "event": "",
+      "eventEnd": "",
+      "memo": "국내 대학(원) 재학생 대상, 졸업생 불가. 예선 모집 2026년 11월 → 본선 팀 발표 12월 → 사전학습 2027년 1월 → 집중교육·제작·본선 2월(서울대). 정확한 접수 마감일은 확인 못 함 — 곧 마감일 수 있으니 공식 홈페이지 먼저 확인.",
+      "source": "슈퍼루키·링커리어 모집 공고 https://linkareer.com/activity/364802",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "kinpex-siif-2026",
+      "title": "2026 대한민국발명특허대전 · 서울국제발명전시회",
+      "category": "전시회",
+      "org": "지식재산처 · 한국발명진흥회",
+      "url": "https://www.coex.co.kr/event/full-schedules/",
+      "start": "",
+      "deadline": "",
+      "event": "2026-12-02",
+      "eventEnd": "2026-12-05",
+      "memo": "서울 코엑스 C홀. 같은 기간 상표·디자인권展도 함께 열림.",
+      "source": "KMJ 2026-11 https://www.kmjournal.net/news/articleView.html?idxno=14325",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "kspe-2026-fall",
+      "title": "한국정밀공학회 2026 추계학술대회",
+      "category": "전시회",
+      "org": "한국정밀공학회",
+      "url": "https://www.ceco.co.kr/",
+      "start": "",
+      "deadline": "",
+      "event": "2026-12-02",
+      "eventEnd": "2026-12-05",
+      "memo": "창원컨벤션센터(CECO) 컨벤션홀·회의실. 학술대회라 청강·등록 조건은 학회 공지로 확인.",
+      "source": "창원컨벤션센터 일정 안내 https://www.ceco.co.kr/",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "ktech-festival-2026",
+      "title": "2026 코리아 테크 페스티벌",
+      "category": "전시회",
+      "org": "코리아 테크 페스티벌 사무국",
+      "url": "https://ktfshow.com/",
+      "start": "",
+      "deadline": "",
+      "event": "2026-12-09 09:30",
+      "eventEnd": "2026-12-11 17:00",
+      "memo": "서울 코엑스 B홀. 산업기술 전시(AI 데이터센터, 반도체, 피지컬 AI·로봇 등)와 포럼. 12/9~10은 18시, 12/11은 17시까지.",
+      "source": "코엑스 행사 페이지 https://www.coex.co.kr/exhibitions/2026-%EC%BD%94%EB%A6%AC%EC%95%84-%ED%85%8C%ED%81%AC-%ED%8E%98%EC%8A%A4%ED%8B%B0%EB%B2%8C/",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "art-global-gyeongnam-13",
+      "title": "제13회 아트 글로벌&경남",
+      "category": "전시회",
+      "org": "창원컨벤션센터",
+      "url": "https://www.ceco.co.kr/",
+      "start": "",
+      "deadline": "",
+      "event": "2026-12-18",
+      "eventEnd": "2026-12-20",
+      "memo": "창원컨벤션센터 2·3전시장. 관람 시간·요금은 미확인.",
+      "source": "창원컨벤션센터 일정 안내 https://www.ceco.co.kr/",
+      "foundAt": "2026-11-27"
+    }
+  ]
+}
