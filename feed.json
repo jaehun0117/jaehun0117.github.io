@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-27T16:40+09:00",
+  "updated": "2026-11-27T16:11+09:00",
   "items": [
     {
       "id": "kosaf-2027-1-national-1st",
@@ -97,6 +97,34 @@
       "eventEnd": "2026-12-20",
       "memo": "창원컨벤션센터 2·3전시장. 관람 시간·요금은 미확인.",
       "source": "창원컨벤션센터 일정 안내 https://www.ceco.co.kr/",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "tnc-ami-10",
+      "title": "티앤씨재단 대학생 장학생 '아미' 10기 모집",
+      "category": "장학금",
+      "org": "티앤씨재단",
+      "url": "https://www.thefairnews.co.kr/news/articleView.html?idxno=94451",
+      "start": "",
+      "deadline": "2026-12-31",
+      "event": "2027-03",
+      "eventEnd": "2029-02",
+      "memo": "2027년 기준 대학 1~3학년 재학·휴학생(학교 제한 미기재). 월 30만원 장학금 + 성과 인센티브 연 최대 240만원, 2년간 월 1~2회 활동. 전용 웹사이트 가입 후 에세이·포트폴리오 제출, '가치관 진단' 완료해야 접수 인정. 지원 사이트 주소·마감 시각·접수 시작일 미확인. 서류 발표 2027-01-06, 면접 1/13~15·1/20~22, 최종 1/27.",
+      "source": "더페어 2026-11-17 https://www.thefairnews.co.kr/news/articleView.html?idxno=94451 · 비즈니스코리아 https://www.businesskorea.co.kr/news/articleView.html?idxno=281465",
+      "foundAt": "2026-11-27"
+    },
+    {
+      "id": "kdex-2026",
+      "title": "K-DEX 2026 대한민국 국제지상군방위산업전",
+      "category": "전시회",
+      "org": "K-DEX 조직위원회 (사무국 (주)메쎄이상)",
+      "url": "https://k-dex.kr/visitor/guide/",
+      "start": "",
+      "deadline": "2026-12-07 23:59",
+      "event": "2026-12-08 10:00",
+      "eventEnd": "2026-12-11 17:00",
+      "memo": "고양 KINTEX 제2전시장. 유료: 사전등록 20,000원(~12/7, 마감 시각은 환불 기한 기준), 현장 30,000원. 일반 대학생 무료 대상 아님(군 관련 학과 재학생은 무료). 입장 마감 16:30. 지상 무기체계·방산 전시.",
+      "source": "K-DEX 공식 관람안내 https://k-dex.kr/visitor/guide/ · 전시개요 https://k-dex.kr/about/overview/",
       "foundAt": "2026-11-27"
     }
   ]
