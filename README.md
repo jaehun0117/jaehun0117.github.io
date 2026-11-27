@@ -1,2 +1,2 @@
 # jaehun0117.github.io
-Even Assembly of My School Life
+Event Assembly of My School Life
